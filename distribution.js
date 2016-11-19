@@ -1,26 +1,38 @@
-const next = (x, y) => {
-  if(x === 0 && y === 0)
-    return [1, 0];
-  else if(y === 0)
-    return [Math.ceil((x+1) / 2), Math.floor((x+1) / 2)];
-  else
-    return [x+1, y-1];
-};
+const step = (x, y) =>
+  (y === 0) ?
+    [
+      Math.ceil((x+1) / 2),
+      Math.floor((x+1) / 2)
+    ] :
+    [
+      x+1,
+      Math.max(y-1, 0)
+    ]
 
-const organizer = ([[x, y], ...tail], [lx, ly]) => {
-  if(x === lx && y === ly)
-    return [[x, y], ...tail];
-  else 
-    return [...organizer([next(x, y)], [lx, ly]), [x, y], ...tail];
-};
+const mount = ([head, ...tail], last) =>
+  equalCoord(head, last) ?
+    [
+      head,
+      ...tail
+    ] :
+    [
+      ...mount([step(...head)], last),
+      head,
+      ...tail
+    ]
+
+const equalCoord = ([x, y], [x2, y2]) => x === x2 && y === y2;
+
+const initCoord = [0, 0];
   
 const getCoord = (arr, [x, y]) => arr[x][y];
 
 const getLastCoord = input => [input.length-1, input.slice(-1)[0].length-1];
 
-const distribution = input =>
-  organizer([[0, 0]], getLastCoord(input))
-    .reverse()
-    .map(getCoord.bind(null, input));
+const orderedCoords = input => mount([initCoord], getLastCoord(input)).reverse();
+
+const coordsToValues = (coords, input) => coords.map(getCoord.bind(null, input));
+
+const distribution = input => coordsToValues(orderedCoords(input), input);
 
 module.exports = distribution;
